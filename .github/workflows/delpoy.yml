@@ -1,0 +1,29 @@
+name: Deploy Othera Static Page
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H 15.235.209.104 >> ~/.ssh/known_hosts
+
+      - name: Deploy to Server
+        run: |
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=no almalinux@15.235.209.104 << 'EOF'
+            cd /home/almalinux/cicd_projects/Othera
+
+            git pull origin main
+          EOF
